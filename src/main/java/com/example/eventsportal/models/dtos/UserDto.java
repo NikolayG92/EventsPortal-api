@@ -1,6 +1,6 @@
 package com.example.eventsportal.models.dtos;
 
-import jdk.jfr.Event;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
