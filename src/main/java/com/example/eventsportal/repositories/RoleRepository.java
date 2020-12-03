@@ -1,11 +1,12 @@
 package com.example.eventsportal.repositories;
 
-import com.example.eventsportal.models.entities.Category;
+
+import com.example.eventsportal.models.entities.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface CategoryRepository extends JpaRepository<Category, String> {
+public interface RoleRepository extends JpaRepository<Role, String> {
 
-    Category findByName(String name);
+    Role findByAuthority(String authority);
 }

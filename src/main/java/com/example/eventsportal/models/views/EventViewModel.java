@@ -1,16 +1,16 @@
-package com.example.eventsportal.models.dtos;
+package com.example.eventsportal.models.views;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-
 @NoArgsConstructor
 @Getter
 @Setter
-public class CategoryDto {
-
+public class EventViewModel {
     private String id;
     private String name;
+    private String description;
     private String imageUrl;
+    private int ticketsAvailable;
 }
