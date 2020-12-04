@@ -13,7 +13,7 @@ import javax.persistence.MappedSuperclass;
 @NoArgsConstructor
 @Getter
 @Setter
-public abstract class BaseEntity {
+public class BaseEntity {
 
     @Id
     @GeneratedValue(generator = "uuid-string")

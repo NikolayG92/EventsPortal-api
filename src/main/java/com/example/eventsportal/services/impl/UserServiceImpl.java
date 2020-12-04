@@ -1,5 +1,6 @@
 package com.example.eventsportal.services.impl;
 
+import com.example.eventsportal.config.jwt.JwtUtils;
 import com.example.eventsportal.models.bindingModels.LoginBindingModel;
 import com.example.eventsportal.models.bindingModels.UserRegisterBindingModel;
 import com.example.eventsportal.models.dtos.UserDto;
@@ -10,43 +11,41 @@ import com.example.eventsportal.repositories.RoleRepository;
 import com.example.eventsportal.repositories.UserRepository;
 import com.example.eventsportal.services.RoleService;
 import com.example.eventsportal.services.UserService;
+
+import com.google.common.collect.Sets;
 import org.modelmapper.ModelMapper;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import javax.persistence.EntityExistsException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
+import javax.persistence.EntityNotFoundException;
+import javax.transaction.Transactional;
+import javax.validation.Valid;
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.springframework.security.web.context.HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY;
-
 @Service
-public class UserServiceImpl implements UserService, UserDetailsService {
+public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
-    private final RoleRepository roleRepository;
+    private final RoleService roleService;
+    private final JwtUtils jwtUtils;
 
-
-    private final AuthenticationManager authenticationManager;
-
-    public UserServiceImpl(UserRepository userRepository, ModelMapper modelMapper, BCryptPasswordEncoder bCryptPasswordEncoder, RoleRepository roleRepository, AuthenticationManager authenticationManager) {
+    public UserServiceImpl(UserRepository userRepository, ModelMapper modelMapper, BCryptPasswordEncoder bCryptPasswordEncoder, RoleService roleService, JwtUtils jwtUtils) {
         this.userRepository = userRepository;
         this.modelMapper = modelMapper;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
-        this.roleRepository = roleRepository;
 
-        this.authenticationManager = authenticationManager;
+        this.roleService = roleService;
+        this.jwtUtils = jwtUtils;
+
     }
 
 
@@ -64,26 +63,27 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     @Override
-    public RegisterViewModel register(UserRegisterBindingModel userRegisterBindingModel) {
+    public LoginViewModel signInUser(LoginBindingModel loginBindingModel) {
 
+        final User user = findUserByUsername(loginBindingModel.getUsername());
 
-        this.userRepository.findByUsername(userRegisterBindingModel.getUsername()).ifPresent(u -> {
-            throw new EntityExistsException(String.format("User with username '%s' already exists.", userRegisterBindingModel.getUsername()));
-        });
+        final String token = jwtUtils.generateToken(user);
 
-        User user = this.modelMapper.map(userRegisterBindingModel, User.class);
-
-
-        user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
-
-        user.setAuthorities(new HashSet<>());
-        user.getAuthorities().add(this.roleRepository.findByAuthority("ROLE_USER"));
-
-        this.userRepository.saveAndFlush(user);
-
-        return this.modelMapper.map(user, RegisterViewModel.class);
+        return new LoginViewModel(token);
     }
 
+    @Override
+    public User editUser(UserDto userDto) {
+        User user = this.modelMapper
+        .map(this.userRepository.findByUsername(userDto.getUsername())
+                .orElse(null), User.class);
+
+        user.setPassword(userDto.getPassword());
+        user.setImageUrl(userDto.getImageUrl());
+
+        this.userRepository.saveAndFlush(user);
+        return user;
+    }
 
     @Override
     public User findUserByUsername(String username) {
@@ -94,13 +94,38 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     }
 
+    @Override
+    @Transactional
+    public RegisterViewModel signUpUser(UserRegisterBindingModel userRegisterBindingModel) {
+
+        this.userRepository.findByUsername(userRegisterBindingModel.getUsername()).ifPresent(u -> {
+            throw new EntityExistsException(String.format("User with username '%s' already exists.", userRegisterBindingModel.getUsername()));
+        });
+
+        User user = this.modelMapper.map(userRegisterBindingModel, User.class);
+
+        if (this.userRepository.count() == 0) {
+            roleService.seedRolesInDb();
+
+            user.setAuthorities(Sets.newHashSet(this.roleService.findByAuthority("ADMIN")));
+        } else {
+            user.setAuthorities(Sets.newHashSet(this.roleService.findByAuthority("USER")));
+        }
+
+        user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
+
+
+
+        this.userRepository.saveAndFlush(user);
+
+        return this.modelMapper.map(user, RegisterViewModel.class);
+    }
+
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-
-        return userRepository.findByUsername(username)
-                .orElseThrow
-                        (() ->
-                                new UsernameNotFoundException(String.format("%s user not found", username)));
+        return this.userRepository.findByUsername(username)
+                .orElseThrow(() ->
+                        new EntityNotFoundException(String.format("Username %s not found", username)));
     }
 }

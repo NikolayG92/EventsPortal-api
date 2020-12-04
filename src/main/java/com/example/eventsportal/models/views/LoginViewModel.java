@@ -1,16 +1,17 @@
 package com.example.eventsportal.models.views;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.validation.constraints.NotNull;
 
-@NoArgsConstructor
+@AllArgsConstructor
 @Getter
 @Setter
 public class LoginViewModel {
 
     @NotNull
-    private String id;
+    private String jwt;
 }

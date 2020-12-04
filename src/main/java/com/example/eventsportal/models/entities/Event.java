@@ -7,6 +7,8 @@ import org.hibernate.validator.constraints.Length;
 
 import javax.persistence.*;
 import javax.validation.constraints.Min;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "events")
@@ -25,5 +27,13 @@ public class Event extends BaseEntity{
     @Column(name = "tickets_available")
     @Min(value = 0, message = "Tickets cannot be negative!")
     private int ticketsAvailable;
+    @ManyToMany(fetch = FetchType.EAGER,
+            cascade = CascadeType.PERSIST)
+    @JoinTable(
+            name = "events_users",
+            joinColumns = {@JoinColumn(name = "event_id")},
+            inverseJoinColumns = {@JoinColumn(name = "user_id")}
+    )
+    private Set<User> users = new HashSet<>();
 
 }

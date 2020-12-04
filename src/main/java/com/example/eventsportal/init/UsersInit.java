@@ -9,6 +9,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 @Component
 public class UsersInit implements CommandLineRunner {
@@ -34,15 +35,11 @@ public class UsersInit implements CommandLineRunner {
             this.roleService.seedRolesInDb();
             User user = new User();
             user.setEmail("test@abv.bg");
-            user.setEvents(new ArrayList<>());
-            user.getEvents().add(this.eventRepository.findAll().get(0));
             user.setPassword(bCryptPasswordEncoder.encode("12345"));
             user.setUsername("test1");
             user.setAuthorities(this.roleService.findAllRoles());
             User user1 = new User();
             user1.setEmail("test1@abv.bg");
-            user1.setEvents(new ArrayList<>());
-            user1.getEvents().add(this.eventRepository.findAll().get(0));
             user1.setPassword(bCryptPasswordEncoder.encode("12345"));
             user1.setUsername("test2");
             user1.setAuthorities(this.roleService.findAllRoles());

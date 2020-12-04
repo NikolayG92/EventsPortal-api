@@ -1,11 +1,8 @@
 package com.example.eventsportal.models.dtos;
 
-import com.example.eventsportal.models.entities.Category;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import javax.persistence.ManyToOne;
 
 @NoArgsConstructor
 @Getter

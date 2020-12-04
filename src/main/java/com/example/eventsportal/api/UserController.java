@@ -4,6 +4,7 @@ import com.example.eventsportal.models.bindingModels.LoginBindingModel;
 import com.example.eventsportal.models.bindingModels.UserRegisterBindingModel;
 import com.example.eventsportal.models.dtos.UserDto;
 import com.example.eventsportal.models.entities.User;
+import com.example.eventsportal.models.views.LoginViewModel;
 import com.example.eventsportal.models.views.RegisterViewModel;
 import com.example.eventsportal.services.UserService;
 
@@ -22,6 +23,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
+import java.security.Principal;
 import java.util.Set;
 
 @RestController
@@ -51,57 +53,54 @@ public class UserController {
                 .body(this.userService.getAllUsers());
     }
 
-    @GetMapping("/")
-    public ResponseEntity<UserDto> findUserById(@RequestParam("id") String id){
+    @GetMapping("/profile")
+    public ResponseEntity<User> getCurrentUser(Principal principal,
+                                               HttpSession httpSession){
 
-        UserDto user = this.userService.findUserById(id);
 
-        if(user != null) {
-            return ResponseEntity
-                    .ok()
-                    .body(user);
-        }else {
-            return ResponseEntity
-                    .notFound()
-                    .build();
-        }
+        User user = this.userService.findUserByUsername(principal.getName());
+
+        return ResponseEntity
+                .ok()
+                .body(user);
     }
 
     @PostMapping("/register")
     public ResponseEntity<RegisterViewModel> registerUser(@Valid @RequestBody UserRegisterBindingModel userRegisterBindingModel) {
-        RegisterViewModel created = this.userService.register(userRegisterBindingModel);
+        RegisterViewModel created = this.userService.signUpUser(userRegisterBindingModel);
 
         return ResponseEntity
                 .ok()
                 .body(created);
     }
-    @PostMapping(produces = "application/json")
-    @RequestMapping({ "/login" })
-    public ResponseEntity<User> login(@Valid @RequestBody LoginBindingModel loginBindingModel, final HttpServletRequest request) {
-        UsernamePasswordAuthenticationToken authReq =
-                new UsernamePasswordAuthenticationToken(loginBindingModel.getUsername(), loginBindingModel.getPassword());
-        Authentication auth = authManager.authenticate(authReq);
-        SecurityContext sc = SecurityContextHolder.getContext();
-        sc.setAuthentication(auth);
-        HttpSession session = request.getSession(true);
-        session.setAttribute("SPRING_SECURITY_CONTEXT", sc);
 
-
-        User user = this.userService.findUserByUsername(loginBindingModel.getUsername());
-        if(bCryptPasswordEncoder.matches(loginBindingModel.getPassword(), user.getPassword())){
-            user.setPassword(loginBindingModel.getPassword());
-        }
+    @PostMapping("/login")
+    public ResponseEntity<LoginViewModel> login(@Valid @RequestBody LoginBindingModel loginBindingModel ) {
+        LoginViewModel created = this.userService.signInUser(loginBindingModel);
 
         return ResponseEntity
-                .ok(user);
+                .ok()
+                .body(created);
     }
 
     @GetMapping("/logout")
-    public ResponseEntity<Boolean> logoutUser(HttpSession httpSession){
+    public ResponseEntity<Void> logoutUser(HttpSession httpSession){
 
         httpSession.invalidate();
 
         return ResponseEntity.ok()
-                .body(true);
+                .build();
     }
+
+
+    @PostMapping("/edit")
+    public ResponseEntity<User> editUserProfile(@Valid @RequestBody UserDto userDto) {
+
+        return ResponseEntity
+                .ok()
+                .body(this.userService.editUser(userDto));
+    }
+
+
+
 }
