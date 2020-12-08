@@ -12,5 +12,6 @@ public class EventViewModel {
     private String name;
     private String description;
     private String imageUrl;
+    private String startDate;
     private int ticketsAvailable;
 }

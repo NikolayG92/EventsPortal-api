@@ -7,6 +7,8 @@ import org.hibernate.validator.constraints.Length;
 
 import javax.persistence.*;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -24,6 +26,8 @@ public class Event extends BaseEntity{
     private String description;
     @Column(name = "image_url")
     private String imageUrl;
+    @Column(name = "start_date", nullable = false)
+    private LocalDate startedDate;
     @Column(name = "tickets_available")
     @Min(value = 0, message = "Tickets cannot be negative!")
     private int ticketsAvailable;

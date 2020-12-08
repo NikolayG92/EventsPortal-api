@@ -12,4 +12,5 @@ public interface EventRepository extends JpaRepository<Event, String> {
 
     Event findByUsers(User user);
 
+    Set<Event> findAllByUsers(User user);
 }

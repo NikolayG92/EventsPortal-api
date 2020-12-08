@@ -1,9 +1,11 @@
 package com.example.eventsportal.services;
 
 import com.example.eventsportal.models.bindingModels.LoginBindingModel;
+import com.example.eventsportal.models.bindingModels.UserEditBindingModel;
 import com.example.eventsportal.models.bindingModels.UserRegisterBindingModel;
 import com.example.eventsportal.models.dtos.UserDto;
 import com.example.eventsportal.models.entities.User;
+import com.example.eventsportal.models.serviceModels.UserServiceModel;
 import com.example.eventsportal.models.views.LoginViewModel;
 import com.example.eventsportal.models.views.RegisterViewModel;
 
@@ -25,5 +27,6 @@ public interface UserService extends UserDetailsService {
 
     LoginViewModel signInUser(LoginBindingModel loginBindingModel);
 
-    User editUser(UserDto userDto);
+    User editUser(UserEditBindingModel userEditBindingModel,
+                  UserServiceModel userServiceModel, String username);
 }

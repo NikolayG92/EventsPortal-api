@@ -16,8 +16,6 @@ public class Category extends BaseEntity{
 
     @Column(name = "name", nullable = false, unique = true)
     private String name;
-    @Column(name = "image_url")
-    private String imageUrl;
     @OneToMany
     private List<Event> events;
 }

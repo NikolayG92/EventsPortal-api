@@ -2,9 +2,11 @@ package com.example.eventsportal.services.impl;
 
 import com.example.eventsportal.config.jwt.JwtUtils;
 import com.example.eventsportal.models.bindingModels.LoginBindingModel;
+import com.example.eventsportal.models.bindingModels.UserEditBindingModel;
 import com.example.eventsportal.models.bindingModels.UserRegisterBindingModel;
 import com.example.eventsportal.models.dtos.UserDto;
 import com.example.eventsportal.models.entities.User;
+import com.example.eventsportal.models.serviceModels.UserServiceModel;
 import com.example.eventsportal.models.views.LoginViewModel;
 import com.example.eventsportal.models.views.RegisterViewModel;
 import com.example.eventsportal.repositories.RoleRepository;
@@ -16,9 +18,11 @@ import com.google.common.collect.Sets;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -67,22 +71,34 @@ public class UserServiceImpl implements UserService {
 
         final User user = findUserByUsername(loginBindingModel.getUsername());
 
-        final String token = jwtUtils.generateToken(user);
+        if(bCryptPasswordEncoder.matches(loginBindingModel.getPassword(), user.getPassword())){
+            final String token = jwtUtils.generateToken(user);
 
-        return new LoginViewModel(token);
+            return new LoginViewModel(token);
+        }else {
+            throw new SecurityException("Wrong credentials!");
+        }
+
     }
 
     @Override
-    public User editUser(UserDto userDto) {
+    public User editUser(UserEditBindingModel userEditBindingModel, UserServiceModel userServiceModel, String username) {
         User user = this.modelMapper
-        .map(this.userRepository.findByUsername(userDto.getUsername())
+        .map(this.userRepository.findByUsername(username)
                 .orElse(null), User.class);
 
-        user.setPassword(userDto.getPassword());
-        user.setImageUrl(userDto.getImageUrl());
+        if (bCryptPasswordEncoder.matches(userEditBindingModel.getOldPassword(), user.getPassword()) &&
+        userEditBindingModel.getNewPassword().equals(userEditBindingModel.getConfirmPassword())) {
+            user.setPassword(bCryptPasswordEncoder.encode(userEditBindingModel.getNewPassword()));
+            user.setImageUrl(userServiceModel.getImageUrl());
 
-        this.userRepository.saveAndFlush(user);
-        return user;
+            this.userRepository.saveAndFlush(user);
+            return user;
+
+        }else {
+            throw new SecurityException("Wrong credentials!");
+        }
+
     }
 
     @Override
@@ -98,6 +114,9 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public RegisterViewModel signUpUser(UserRegisterBindingModel userRegisterBindingModel) {
 
+        if(!userRegisterBindingModel.getPassword().equals(userRegisterBindingModel.getConfirmPassword())){
+            throw new SecurityException("Passwords do not match!");
+        }
         this.userRepository.findByUsername(userRegisterBindingModel.getUsername()).ifPresent(u -> {
             throw new EntityExistsException(String.format("User with username '%s' already exists.", userRegisterBindingModel.getUsername()));
         });

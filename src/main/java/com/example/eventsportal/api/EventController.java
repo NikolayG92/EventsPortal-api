@@ -7,10 +7,13 @@ import com.example.eventsportal.models.entities.Event;
 import com.example.eventsportal.services.CloudinaryService;
 import com.example.eventsportal.services.EventService;
 import org.modelmapper.ModelMapper;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.Set;
@@ -39,6 +42,14 @@ public class EventController {
 
     }
 
+    @GetMapping("/getEventsByUser")
+    public ResponseEntity<Set<Event>> getAllEventByUser(Principal principal){
+
+        return ResponseEntity.ok()
+                .body(this.eventService.getEventsByUser(principal.getName()));
+
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<EventViewModel> findById(@PathVariable("id") String id){
 
@@ -56,13 +67,16 @@ public class EventController {
                 .build();
     }
 
-    @PostMapping("/create")
-    public ResponseEntity<Event> createEvent(@Valid @RequestBody EventBindingModel eventBindingModel) throws IOException {
+    @PostMapping(value = "/create",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Event> createEvent(@RequestPart("event") @Valid EventBindingModel eventBindingModel,
+                                             @RequestPart("file") @Valid MultipartFile file) throws IOException {
 
         EventServiceModel event = this.modelMapper
                 .map(eventBindingModel, EventServiceModel.class);
 
-//        imgValidate(eventBindingModel, event);
+        imgValidate(event, file);
 
         return ResponseEntity
                 .ok()
@@ -80,9 +94,10 @@ public class EventController {
                 .build();
     }
 
-    private void imgValidate(@ModelAttribute(name = "model") EventBindingModel eventBindingModel, EventServiceModel eventServiceModel) throws IOException {
-        if (eventBindingModel.getImageUrl() != null) {
-            eventServiceModel.setImageUrl(cloudinaryService.uploadImg(eventBindingModel.getImageUrl()));
+
+    private void imgValidate(EventServiceModel eventServiceModel, MultipartFile file) throws IOException {
+        if (file != null) {
+            eventServiceModel.setImageUrl(cloudinaryService.uploadImg(file));
         } else {
             eventServiceModel.setImageUrl("/img/no-image-available.jpg");
         }

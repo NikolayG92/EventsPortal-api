@@ -7,6 +7,7 @@ import com.example.eventsportal.repositories.EventRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,18 +36,20 @@ public class EventsInitialization implements CommandLineRunner {
             event.setName("Sofia Open");
             event.setTicketsAvailable(300);
             event.setImageUrl("https://tennis.bg/uploaded/posts/d800003064880a840d6e8319d2fee200.jpg");
-
+            event.setStartedDate(LocalDate.now());
 
             Event event1 = new Event();
             event1.setName("Us Open");
             event1.setDescription("Us Open tournament starts at 17 august");
             event1.setTicketsAvailable(25);
             event1.setImageUrl("https://www.insidesport.co/wp-content/uploads/2020/08/20200820_064609.jpg");
+            event1.setStartedDate(LocalDate.now());
 
             Event theatre = new Event();
             theatre.setName("Romeo And Juliet");
             theatre.setTicketsAvailable(1050);
             theatre.setDescription("This one is our theathre Lorem Ipsum hahahaa uaewprua fasdfasl;d fjasdf as");
+            theatre.setStartedDate(LocalDate.now());
             theatre.setImageUrl("https://www.theoldglobe.org/link/9814276cefdb459c9d5138b0627caed5.aspx?id=36498");
             this.eventRepository.save(event);
             this.eventRepository.save(event1);

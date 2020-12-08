@@ -18,4 +18,6 @@ public interface EventService {
     Event createEvent(EventServiceModel eventServiceModel);
 
     void deleteEvent(String id);
+
+    Set<Event> getEventsByUser(String name);
 }

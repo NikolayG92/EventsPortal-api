@@ -14,9 +14,12 @@ import com.example.eventsportal.services.UserService;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 @Service
 public class EventServiceImpl implements EventService {
@@ -51,6 +54,11 @@ public class EventServiceImpl implements EventService {
         Event event = this.eventRepository.findById(id).orElse(null);
         EventDto eventDto = this.modelMapper
                 .map(event, EventDto.class);
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        String startDate = event.getStartedDate().format(formatter);
+
+        eventDto.setStartDate(startDate);
         return eventDto;
 
     }
@@ -63,7 +71,7 @@ public class EventServiceImpl implements EventService {
         User user = this.modelMapper
                 .map(this.userService.findUserByUsername(username), User.class);
 
-        if(this.eventRepository.findByUsers(user) != null) {
+        if(event.getUsers().contains(user)) {
             event.setTicketsAvailable(event.getTicketsAvailable() - 1);
         }else {
             event.getUsers().add(user);
@@ -79,6 +87,9 @@ public class EventServiceImpl implements EventService {
         Event event = this.modelMapper
                 .map(eventServiceModel, Event.class);
 
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDate localDate = LocalDate.parse(eventServiceModel.getStartDate().substring(0, 10), formatter);
+        event.setStartedDate(localDate);
         Category category = this.categoryService.findCategoryByName(eventServiceModel.getCategory());
         category.getEvents().add(event);
         this.eventRepository.saveAndFlush(event);
@@ -95,6 +106,15 @@ public class EventServiceImpl implements EventService {
         category.getEvents().remove(event);
         this.categoryRepository.saveAndFlush(category);
         this.eventRepository.deleteById(id);
+    }
+
+    @Override
+    public Set<Event> getEventsByUser(String name) {
+
+        User user = this.userService.findUserByUsername(name);
+
+        Set<Event> events = this.eventRepository.findAllByUsers(user);
+        return this.eventRepository.findAllByUsers(user);
     }
 
 }

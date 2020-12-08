@@ -13,6 +13,7 @@ public class EventDto {
     private String name;
     private String description;
     private String imageUrl;
+    private String startDate;
     private int ticketsAvailable;
     private CategoryDto category;
 }
