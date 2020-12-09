@@ -2,7 +2,7 @@
 This repository is the back-end side of my Events Portal Application
 created on Java.
 
-#The project includes
+## The project includes
 - Spring Boot
 - Spring Security
 - Spring Data JPA
@@ -11,7 +11,7 @@ created on Java.
 - JWT
 - Cloudinary
 
-#Installation
+## Installation
 To run the application you have to pull the project,
 run Powershell or any other console and go to project's directory.
 And write those commmands:
