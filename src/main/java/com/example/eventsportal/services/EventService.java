@@ -6,6 +6,7 @@ import com.example.eventsportal.models.entities.Event;
 import com.example.eventsportal.models.serviceModels.EventServiceModel;
 import com.example.eventsportal.models.views.EventViewModel;
 
+import java.util.List;
 import java.util.Set;
 
 public interface EventService {
@@ -13,7 +14,7 @@ public interface EventService {
 
     EventDto findById(String id);
 
-    void buyTickets(String id, String username);
+    void buyTickets(String id, String username, int boughtTickets);
 
     Event createEvent(EventServiceModel eventServiceModel);
 

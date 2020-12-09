@@ -1,11 +1,15 @@
 package com.example.eventsportal.api;
 
 import com.example.eventsportal.models.bindingModels.EventBindingModel;
+import com.example.eventsportal.models.entities.User;
+import com.example.eventsportal.models.entities.UserEventInfo;
 import com.example.eventsportal.models.serviceModels.EventServiceModel;
 import com.example.eventsportal.models.views.EventViewModel;
 import com.example.eventsportal.models.entities.Event;
 import com.example.eventsportal.services.CloudinaryService;
 import com.example.eventsportal.services.EventService;
+import com.example.eventsportal.services.UserEventInfoService;
+import com.example.eventsportal.services.UserService;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -13,9 +17,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
 import java.io.IOException;
 import java.security.Principal;
+import java.util.List;
 import java.util.Set;
 
 @RestController
@@ -26,11 +30,15 @@ public class EventController {
     private final EventService eventService;
     private final ModelMapper modelMapper;
     private final CloudinaryService cloudinaryService;
+    private final UserEventInfoService userEventInfoService;
+    private final UserService userService;
 
-    public EventController(EventService eventService, ModelMapper modelMapper, CloudinaryService cloudinaryService) {
+    public EventController(EventService eventService, ModelMapper modelMapper, CloudinaryService cloudinaryService, UserEventInfoService userEventInfoService, UserService userService) {
         this.eventService = eventService;
         this.modelMapper = modelMapper;
         this.cloudinaryService = cloudinaryService;
+        this.userEventInfoService = userEventInfoService;
+        this.userService = userService;
     }
 
     @GetMapping("/all")
@@ -50,6 +58,17 @@ public class EventController {
 
     }
 
+    @GetMapping("/getEventsBoughtTickets")
+    public ResponseEntity<List<UserEventInfo>> getEventsBoughtTickets(Principal principal){
+
+        User user = this.userService.findUserByUsername(principal.getName());
+        return ResponseEntity.ok()
+                .body(this.userEventInfoService
+                .findAllByUser(user));
+    }
+
+
+
     @GetMapping("/{id}")
     public ResponseEntity<EventViewModel> findById(@PathVariable("id") String id){
 
@@ -60,8 +79,10 @@ public class EventController {
 
     @PostMapping("/buyTickets/{id}")
     public ResponseEntity<Event> buyTickets(@PathVariable("id") String id,
+                                            @RequestBody @Valid EventBindingModel eventBindingModel,
                                             Principal principal){
-        this.eventService.buyTickets(id, principal.getName());
+
+        this.eventService.buyTickets(id, principal.getName(), eventBindingModel.getBoughtTickets());
         return ResponseEntity
                 .ok()
                 .build();

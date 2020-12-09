@@ -38,6 +38,6 @@ public class Event extends BaseEntity{
             joinColumns = {@JoinColumn(name = "event_id")},
             inverseJoinColumns = {@JoinColumn(name = "user_id")}
     )
-    private Set<User> users = new HashSet<>();
+    private Set<UserEventInfo> users = new HashSet<>();
 
 }

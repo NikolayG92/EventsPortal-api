@@ -17,6 +17,7 @@ public class EventBindingModel {
     private String name;
     private String description;
     private int ticketsAvailable;
+    private int boughtTickets;
     private String startDate;
     private String category;
 }

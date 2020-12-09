@@ -4,9 +4,11 @@ import com.example.eventsportal.models.dtos.EventDto;
 import com.example.eventsportal.models.entities.Category;
 import com.example.eventsportal.models.entities.Event;
 import com.example.eventsportal.models.entities.User;
+import com.example.eventsportal.models.entities.UserEventInfo;
 import com.example.eventsportal.models.serviceModels.EventServiceModel;
 import com.example.eventsportal.repositories.CategoryRepository;
 import com.example.eventsportal.repositories.EventRepository;
+import com.example.eventsportal.repositories.UserEventInfoRepository;
 import com.example.eventsportal.repositories.UserRepository;
 import com.example.eventsportal.services.CategoryService;
 import com.example.eventsportal.services.EventService;
@@ -16,10 +18,10 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
 
 @Service
 public class EventServiceImpl implements EventService {
@@ -28,15 +30,17 @@ public class EventServiceImpl implements EventService {
     private final CategoryRepository categoryRepository;
     private final UserService userService;
     private final UserRepository userRepository;
+    private final UserEventInfoRepository userEventInfoRepository;
 
     private final ModelMapper modelMapper;
 
-    public EventServiceImpl(EventRepository eventRepository, CategoryService categoryService, CategoryRepository categoryRepository, UserService userService, UserRepository userRepository, ModelMapper modelMapper) {
+    public EventServiceImpl(EventRepository eventRepository, CategoryService categoryService, CategoryRepository categoryRepository, UserService userService, UserRepository userRepository, UserEventInfoRepository userEventInfoRepository, ModelMapper modelMapper) {
         this.eventRepository = eventRepository;
         this.categoryService = categoryService;
         this.categoryRepository = categoryRepository;
         this.userService = userService;
         this.userRepository = userRepository;
+        this.userEventInfoRepository = userEventInfoRepository;
         this.modelMapper = modelMapper;
     }
 
@@ -64,21 +68,59 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public void buyTickets(String id, String username) {
+    public void buyTickets(String id, String username, int boughtTickets) {
         Event event = this.eventRepository.findById(id)
                 .orElse(null);
 
         User user = this.modelMapper
                 .map(this.userService.findUserByUsername(username), User.class);
 
-        if(event.getUsers().contains(user)) {
-            event.setTicketsAvailable(event.getTicketsAvailable() - 1);
+        List<UserEventInfo> userEventInfos =
+                this.userEventInfoRepository.
+                findAllByUser(user);
+
+        if(userEventInfos.size() == 0){
+            userEventInfos = new ArrayList<>();
+            userEventInfos.add(new UserEventInfo());
+            userEventInfos.get(0).setUser(user);
+            userEventInfos.get(0).setBoughtTickets(boughtTickets);
+            this.userEventInfoRepository.saveAndFlush(userEventInfos.get(0));
+            event.getUsers().add(userEventInfos.get(0));
+            event.setTicketsAvailable(event.getTicketsAvailable() - boughtTickets);
+            this.eventRepository.save(event);
         }else {
-            event.getUsers().add(user);
-            event.setTicketsAvailable(event.getTicketsAvailable() - 1);
+            if(event.getUsers().size() > 0){
+                event.getUsers().forEach(userEventInfo -> {
+                    if(userEventInfo.getUser().equals(user)){
+                        userEventInfo.setBoughtTickets(userEventInfo.getBoughtTickets() + boughtTickets);
+                        event.setTicketsAvailable(event.getTicketsAvailable() - boughtTickets);
+                        this.userEventInfoRepository.saveAndFlush(userEventInfo);
+                        this.eventRepository.saveAndFlush(event);
+
+                    }else {
+                        UserEventInfo eventInfo = new UserEventInfo();
+                        eventInfo.setUser(user);
+                        eventInfo.setBoughtTickets(boughtTickets);
+                        this.userEventInfoRepository.saveAndFlush(eventInfo);
+                        event.getUsers().add(eventInfo);
+
+                        event.setTicketsAvailable(event.getTicketsAvailable() - boughtTickets);
+                        this.eventRepository.saveAndFlush(event);
+                    }
+                });
+            }else {
+                userEventInfos.add(new UserEventInfo());
+                userEventInfos.get(userEventInfos.size()-1).setUser(user);
+                userEventInfos.get(userEventInfos.size()-1).setBoughtTickets(boughtTickets);
+                this.userEventInfoRepository.saveAndFlush(userEventInfos.get(userEventInfos.size()-1));
+                event.getUsers().add(userEventInfos.get(userEventInfos.size()-1));
+                event.setTicketsAvailable(event.getTicketsAvailable() - boughtTickets);
+                this.eventRepository.save(event);
+            }
+
+
         }
 
-        this.eventRepository.saveAndFlush(event);
     }
 
     @Override
@@ -112,9 +154,13 @@ public class EventServiceImpl implements EventService {
     public Set<Event> getEventsByUser(String name) {
 
         User user = this.userService.findUserByUsername(name);
+        List<UserEventInfo> userEventInfos = this.userEventInfoRepository
+                .findAllByUser(user);
+        Set<Event> events = new HashSet<>();
+        userEventInfos.forEach(userEventInfo ->
+                events.add(eventRepository.findByUsers(userEventInfo)));
 
-        Set<Event> events = this.eventRepository.findAllByUsers(user);
-        return this.eventRepository.findAllByUsers(user);
+        return events;
     }
 
 }
