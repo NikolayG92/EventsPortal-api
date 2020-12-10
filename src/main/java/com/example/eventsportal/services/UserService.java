@@ -1,5 +1,6 @@
 package com.example.eventsportal.services;
 
+import com.example.eventsportal.exceptions.UserNotFoundException;
 import com.example.eventsportal.models.bindingModels.LoginBindingModel;
 import com.example.eventsportal.models.bindingModels.UserEditBindingModel;
 import com.example.eventsportal.models.bindingModels.UserRegisterBindingModel;
@@ -25,7 +26,7 @@ public interface UserService extends UserDetailsService {
 
     RegisterViewModel signUpUser(UserRegisterBindingModel userRegisterBindingModel);
 
-    LoginViewModel signInUser(LoginBindingModel loginBindingModel);
+    LoginViewModel signInUser(LoginBindingModel loginBindingModel) throws UserNotFoundException;
 
     User editUser(UserEditBindingModel userEditBindingModel,
                   UserServiceModel userServiceModel, String username);

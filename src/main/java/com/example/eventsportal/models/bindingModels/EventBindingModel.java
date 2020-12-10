@@ -1,13 +1,10 @@
 package com.example.eventsportal.models.bindingModels;
 
-import com.example.eventsportal.models.entities.Category;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.time.LocalDate;
+import javax.validation.constraints.Min;
 
 @NoArgsConstructor
 @Getter

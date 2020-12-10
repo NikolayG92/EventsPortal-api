@@ -6,6 +6,7 @@ import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
 
 import javax.persistence.*;
+import javax.validation.constraints.FutureOrPresent;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
@@ -27,6 +28,7 @@ public class Event extends BaseEntity{
     @Column(name = "image_url")
     private String imageUrl;
     @Column(name = "start_date", nullable = false)
+    @FutureOrPresent
     private LocalDate startedDate;
     @Column(name = "tickets_available")
     @Min(value = 0, message = "Tickets cannot be negative!")

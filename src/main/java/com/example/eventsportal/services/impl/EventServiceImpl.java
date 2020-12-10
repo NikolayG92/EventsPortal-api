@@ -1,5 +1,6 @@
 package com.example.eventsportal.services.impl;
 
+import com.example.eventsportal.exceptions.MoreTicketsTryingToBuyException;
 import com.example.eventsportal.models.dtos.EventDto;
 import com.example.eventsportal.models.entities.Category;
 import com.example.eventsportal.models.entities.Event;
@@ -68,10 +69,13 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public void buyTickets(String id, String username, int boughtTickets) {
+    public Event buyTickets(String id, String username, int boughtTickets) throws MoreTicketsTryingToBuyException {
         Event event = this.eventRepository.findById(id)
                 .orElse(null);
 
+        if(boughtTickets > event.getTicketsAvailable()){
+            throw new MoreTicketsTryingToBuyException("You cannot buy more tickets than the available!");
+        }
         User user = this.modelMapper
                 .map(this.userService.findUserByUsername(username), User.class);
 
@@ -120,7 +124,7 @@ public class EventServiceImpl implements EventService {
 
 
         }
-
+         return event;
     }
 
     @Override

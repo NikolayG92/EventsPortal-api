@@ -1,6 +1,7 @@
 package com.example.eventsportal.services.impl;
 
 import com.example.eventsportal.config.jwt.JwtUtils;
+import com.example.eventsportal.exceptions.UserNotFoundException;
 import com.example.eventsportal.models.bindingModels.LoginBindingModel;
 import com.example.eventsportal.models.bindingModels.UserEditBindingModel;
 import com.example.eventsportal.models.bindingModels.UserRegisterBindingModel;
@@ -67,18 +68,21 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public LoginViewModel signInUser(LoginBindingModel loginBindingModel) {
+    public LoginViewModel signInUser(LoginBindingModel loginBindingModel) throws UserNotFoundException {
 
-        final User user = findUserByUsername(loginBindingModel.getUsername());
+        User user = findUserByUsername(loginBindingModel.getUsername());
 
-        if(bCryptPasswordEncoder.matches(loginBindingModel.getPassword(), user.getPassword())){
-            final String token = jwtUtils.generateToken(user);
+        if(user != null) {
+            if (bCryptPasswordEncoder.matches(loginBindingModel.getPassword(), user.getPassword())) {
+                final String token = jwtUtils.generateToken(user);
 
-            return new LoginViewModel(token);
-        }else {
-            throw new SecurityException("Wrong credentials!");
-        }
+                return new LoginViewModel(token);
+            }
+            } else {
+                throw new SecurityException("Wrong credentials!");
+            }
 
+        throw new UserNotFoundException("No such user exists!");
     }
 
     @Override
@@ -133,6 +137,7 @@ public class UserServiceImpl implements UserService {
 
         user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
 
+        user.setImageUrl("https://res.cloudinary.com/nikolaygeorgiev/image/upload/v1607591254/no-image-available_gmubru.jpg");
 
 
         this.userRepository.saveAndFlush(user);

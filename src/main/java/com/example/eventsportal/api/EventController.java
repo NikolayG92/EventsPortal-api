@@ -1,5 +1,6 @@
 package com.example.eventsportal.api;
 
+import com.example.eventsportal.exceptions.MoreTicketsTryingToBuyException;
 import com.example.eventsportal.models.bindingModels.EventBindingModel;
 import com.example.eventsportal.models.entities.User;
 import com.example.eventsportal.models.entities.UserEventInfo;
@@ -10,6 +11,7 @@ import com.example.eventsportal.services.CloudinaryService;
 import com.example.eventsportal.services.EventService;
 import com.example.eventsportal.services.UserEventInfoService;
 import com.example.eventsportal.services.UserService;
+import net.bytebuddy.implementation.bind.annotation.Empty;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
@@ -80,19 +83,20 @@ public class EventController {
     @PostMapping("/buyTickets/{id}")
     public ResponseEntity<Event> buyTickets(@PathVariable("id") String id,
                                             @RequestBody @Valid EventBindingModel eventBindingModel,
-                                            Principal principal){
+                                            Principal principal) throws MoreTicketsTryingToBuyException {
 
-        this.eventService.buyTickets(id, principal.getName(), eventBindingModel.getBoughtTickets());
+
         return ResponseEntity
                 .ok()
-                .build();
+                .body(this.eventService.buyTickets(id, principal.getName(),
+                        eventBindingModel.getBoughtTickets()));
     }
 
     @PostMapping(value = "/create",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Event> createEvent(@RequestPart("event") @Valid EventBindingModel eventBindingModel,
-                                             @RequestPart("file") @Valid MultipartFile file) throws IOException {
+                                             @RequestPart("file") @Valid @NotEmpty MultipartFile file) throws IOException {
 
         EventServiceModel event = this.modelMapper
                 .map(eventBindingModel, EventServiceModel.class);

@@ -1,5 +1,6 @@
 package com.example.eventsportal.api;
 
+import com.example.eventsportal.exceptions.UserNotFoundException;
 import com.example.eventsportal.models.bindingModels.LoginBindingModel;
 import com.example.eventsportal.models.bindingModels.UserEditBindingModel;
 import com.example.eventsportal.models.bindingModels.UserRegisterBindingModel;
@@ -14,6 +15,8 @@ import org.modelmapper.ModelMapper;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -33,13 +36,15 @@ public class UserController {
     private final UserService userService;
     private final ModelMapper modelMapper;
     private final CloudinaryService cloudinaryService;
+    private final AuthenticationManager authenticationManager;
 
 
-    public UserController(UserService userService, ModelMapper modelMapper, CloudinaryService cloudinaryService) {
+    public UserController(UserService userService, ModelMapper modelMapper, CloudinaryService cloudinaryService, AuthenticationManager authenticationManager) {
         this.userService = userService;
         this.modelMapper = modelMapper;
 
         this.cloudinaryService = cloudinaryService;
+        this.authenticationManager = authenticationManager;
     }
 
     @GetMapping("/all")
@@ -63,20 +68,23 @@ public class UserController {
 
     @PostMapping("/register")
     public ResponseEntity<RegisterViewModel> registerUser(@Valid @RequestBody UserRegisterBindingModel userRegisterBindingModel) {
-        RegisterViewModel created = this.userService.signUpUser(userRegisterBindingModel);
+        RegisterViewModel registerViewModel =
+                this.userService.signUpUser(userRegisterBindingModel);
 
         return ResponseEntity
                 .ok()
-                .body(created);
+                .body(registerViewModel);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginViewModel> login(@Valid @RequestBody LoginBindingModel loginBindingModel ) {
-        LoginViewModel created = this.userService.signInUser(loginBindingModel);
+    public ResponseEntity<LoginViewModel> login(@Valid @RequestBody LoginBindingModel loginBindingModel ) throws UserNotFoundException {
+        this.authenticationManager
+                .authenticate(new UsernamePasswordAuthenticationToken(loginBindingModel.getUsername(),
+                        loginBindingModel.getPassword()));
+        return ResponseEntity.ok(
+                this.userService.signInUser(loginBindingModel)
+        );
 
-        return ResponseEntity
-                .ok()
-                .body(created);
     }
 
     @GetMapping("/logout")

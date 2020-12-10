@@ -1,5 +1,6 @@
 package com.example.eventsportal.services;
 
+import com.example.eventsportal.exceptions.MoreTicketsTryingToBuyException;
 import com.example.eventsportal.models.bindingModels.EventBindingModel;
 import com.example.eventsportal.models.dtos.EventDto;
 import com.example.eventsportal.models.entities.Event;
@@ -14,7 +15,7 @@ public interface EventService {
 
     EventDto findById(String id);
 
-    void buyTickets(String id, String username, int boughtTickets);
+    Event buyTickets(String id, String username, int boughtTickets) throws MoreTicketsTryingToBuyException;
 
     Event createEvent(EventServiceModel eventServiceModel);
 
