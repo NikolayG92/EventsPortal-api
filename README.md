@@ -18,4 +18,5 @@ And write this commmand:
 ```
 $docker-compose up --build
 ```
-
+ Mysql is running little bit slower, so you should
+wait 3-4 minutes until docker builds.
