@@ -8,6 +8,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class EventViewModel {
+    
     private String id;
     private String name;
     private String description;
