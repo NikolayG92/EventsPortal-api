@@ -23,8 +23,7 @@ public class UserEventInfoServiceImpl implements UserEventInfoService {
 
     @Override
     public List<UserEventInfo> findAllByUser(User user) {
-        List<UserEventInfo> events = this.userEventInfoRepository.findAllByUser(user);
 
-        return events;
+        return this.userEventInfoRepository.findAllByUser(user);
     }
 }

@@ -20,4 +20,5 @@ public class UserEventInfo extends BaseEntity{
     @Column(name = "bought_tickets")
     @Min(value = 0, message = "Tickets cannot be less than 0!")
     private int boughtTickets;
+
 }
