@@ -34,7 +34,7 @@ public class Event extends BaseEntity{
     @Min(value = 0, message = "Tickets cannot be negative!")
     private int ticketsAvailable;
     @ManyToMany(fetch = FetchType.EAGER,
-            cascade = CascadeType.ALL)
+            cascade = CascadeType.PERSIST)
     @JoinTable(
             name = "events_users",
             joinColumns = {@JoinColumn(name = "event_id")},
