@@ -150,6 +150,12 @@ public class EventServiceImpl implements EventService {
                 .orElse(null);
         Category category = this.categoryRepository.findByEvents(event);
         category.getEvents().remove(event);
+
+        if (event != null) {
+            event.getUsers().forEach(userEventInfo -> {
+                this.userEventInfoRepository.delete(userEventInfo);
+            });
+        }
         this.categoryRepository.saveAndFlush(category);
         this.eventRepository.deleteById(id);
     }
