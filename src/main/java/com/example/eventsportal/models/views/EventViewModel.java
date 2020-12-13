@@ -1,8 +1,11 @@
 package com.example.eventsportal.models.views;
 
+import com.example.eventsportal.models.entities.UserEventInfo;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.List;
 
 @NoArgsConstructor
 @Getter
@@ -14,5 +17,6 @@ public class EventViewModel {
     private String description;
     private String imageUrl;
     private String startDate;
+    private List<UserEventInfo> users;
     private int ticketsAvailable;
 }

@@ -66,6 +66,7 @@ public class UserController {
                 .body(user);
     }
 
+
     @PostMapping("/register")
     public ResponseEntity<RegisterViewModel> registerUser(@Valid @RequestBody UserRegisterBindingModel userRegisterBindingModel) {
         RegisterViewModel registerViewModel =

@@ -49,6 +49,7 @@ public class CategoryServiceImpl implements CategoryService {
                         categoryViewModel.getEvents().add(eventViewModel);
                     });
 
+
         return categoryViewModel;
     } else {
         throw new EntityNotFoundException("Category doesnt exist!");
