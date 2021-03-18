@@ -37,20 +37,20 @@ public class EventsInitialization implements CommandLineRunner {
             event.setTicketsAvailable(300);
             event.setImageUrl("https://tennis.bg/uploaded/posts/d800003064880a840d6e8319d2fee200.jpg");
 
-            event.setStartedDate(LocalDate.of(2020, 12, 31));
+            event.setStartedDate(LocalDate.of(2025, 01, 31));
 
             Event event1 = new Event();
             event1.setName("Us Open");
             event1.setDescription("Us Open tournament starts at 17 august");
             event1.setTicketsAvailable(25);
             event1.setImageUrl("https://www.insidesport.co/wp-content/uploads/2020/08/20200820_064609.jpg");
-            event1.setStartedDate(LocalDate.of(2020, 12, 31));
+            event1.setStartedDate(LocalDate.of(2025, 01, 31));
 
             Event theatre = new Event();
             theatre.setName("Romeo And Juliet");
             theatre.setTicketsAvailable(1050);
             theatre.setDescription("This one is our theathre Lorem Ipsum hahahaa uaewprua fasdfasl;d fjasdf as");
-            theatre.setStartedDate(LocalDate.of(2020, 12, 31));
+            theatre.setStartedDate(LocalDate.of(2025, 01, 31));
             theatre.setImageUrl("https://www.theoldglobe.org/link/9814276cefdb459c9d5138b0627caed5.aspx?id=36498");
             this.eventRepository.save(event);
             this.eventRepository.save(event1);
